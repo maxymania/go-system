@@ -31,20 +31,20 @@ func Fgetxattr(fd int, attr string, dest []byte) (sz int, err error) {
 	return int(sz_),err
 }
 
-func Fsetxattr(fd int, attr string, dest []byte,flags int) (sz int, err error) {
+func Fsetxattr(fd int, attr string, dest []byte,flags int) error {
 	attr2 , err := syscall.BytePtrFromString(attr)
 	destp := uintptr(0)
 	destl := uintptr(len(dest))
 	if destl>0 { destp = uintptr(unsafe.Pointer(&dest[0])) }
-	if err!=nil { return 0,err }
-	sz_,_,err := syscall.Syscall6(
+	if err!=nil { return err }
+	_,_,err = syscall.Syscall6(
 			syscall.SYS_FSETXATTR, uintptr(fd),
 			uintptr(unsafe.Pointer(attr2)),
 			destp,
 			destl,
 		uintptr(flags), 0)
 	if err==syscall.Errno(0) { err = nil }
-	return int(sz_),err
+	return err
 }
 
 
