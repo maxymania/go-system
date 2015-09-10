@@ -30,9 +30,11 @@ func (a *AclSID) SetUid(uid uint32) {
 func (a *AclSID) SetGid(gid uint32) {
 	*a = AclSID(gid)|(ACL_GROUP<<32)
 }
+// One of ACL_* (Except ACL_ACCESS/ACL_DEFAULTS)
 func (a *AclSID) SetType(tp int) {
 	*a = AclSID(tp)<<32
 }
+// One of ACL_* (Except ACL_ACCESS/ACL_DEFAULTS)
 func (a AclSID) GetType() int {
 	return int(a>>32)
 }
