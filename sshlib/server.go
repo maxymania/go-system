@@ -50,9 +50,11 @@ func nString(b []byte, n int) ([]byte,string) {
 	return b[n:],string(b[:n])
 }
 
-func handlePCR_R(n int,r <-chan *ssh.Request,ses ssh.Channel, sc chan *ShellSession) {
+func handlePCR_R(n int,r <-chan *ssh.Request,ses ssh.Channel, sc chan *ShellSession,
+				p *ssh.Permissions) {
 	s := new(ShellSession)
 	s.Ch = ses
+	s.Permission = p
 	s.init()
 	defer func() { if ses!=nil { ses.Close() } }()
 	for re := range r {
@@ -84,13 +86,13 @@ func handlePCR_R(n int,r <-chan *ssh.Request,ses ssh.Channel, sc chan *ShellSess
 	}
 }
 
-func handleCR(n int,ncr <-chan ssh.NewChannel, sc chan *ShellSession) {
+func handleCR(n int,ncr <-chan ssh.NewChannel, sc chan *ShellSession, p *ssh.Permissions) {
 	for re := range ncr {
 		switch re.ChannelType() {
 		case "session":
 			c,r,e := re.Accept()
 			if e!=nil { continue }
-			go handlePCR_R(n,r,c,sc)
+			go handlePCR_R(n,r,c,sc,p)
 			continue
 		}
 		//fmt.Println(n,": connected with type",re.ChannelType())
@@ -110,7 +112,7 @@ func Handle(nc net.Conn, sc chan *ShellSession, S *ssh.ServerConfig) {
 	s,ncr,r,e := ssh.NewServerConn(nc,S)
 	n := 0
 	if e!=nil { return }
-	go handleCR(n,ncr,sc)
+	go handleCR(n,ncr,sc,s.Permissions)
 	go handleR(n,r)
 	s.Wait()
 	s.Close()
