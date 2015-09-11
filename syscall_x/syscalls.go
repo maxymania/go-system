@@ -8,7 +8,7 @@
  */
 
 /*
- * This package implements system calls, not implemented by the syscall package.
+ This package implements system calls, not implemented by the syscall package.
  */
 package syscall_x
 

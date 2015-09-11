@@ -8,7 +8,7 @@
  */
 
 /*
- * This Package models POSIX-ACLs including their representation as Xattrs.
+ This Package models POSIX-ACLs including their representation as Xattrs.
  */
 package posix_acl
 
