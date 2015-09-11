@@ -47,4 +47,46 @@ func Fsetxattr(fd int, attr string, dest []byte,flags int) error {
 	return err
 }
 
+type winsize struct{
+	ws_row 		uint16	/* rows, in characters */
+	ws_col 		uint16	/* columns, in characters */
+	ws_xpixel	uint16	/* horizontal size, pixels */
+	ws_ypixel 	uint16	/* vertical size, pixels */
+}
+
+func clamp16(i int) uint16 {
+	if i<0 { return 0 }
+	if i>=(1<<16) { return ^uint16(0) }
+	return uint16(i)
+}
+
+/*
+ Does (C++):
+
+ winsize ws;
+
+ ws.ws_col = w;
+
+ ws.ws_row = h;
+
+ ws.ws_xpixel = w*5;
+
+ ws.ws_ypixel = h*10;
+
+ ioctl(fd,TIOCSWINSZ,&ws);
+*/
+func Ioctl_resize(fd int,w, h int) {
+	var ws winsize
+	ws.ws_col = clamp16(w)
+	ws.ws_row = clamp16(h)
+	ws.ws_xpixel = clamp16(w*5)
+	ws.ws_ypixel = clamp16(h*10)
+	syscall.Syscall(
+		syscall.SYS_IOCTL,
+		uintptr(fd),
+		syscall.TIOCSWINSZ,
+		uintptr(unsafe.Pointer(&ws)) )
+}
+
+
 
