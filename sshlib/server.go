@@ -20,13 +20,14 @@ import "encoding/binary"
 
 // A shell session.
 type ShellSession struct{
-	Ch     ssh.Channel
-	Term   string
-	Width  int
-	Heigth int
+	Ch          ssh.Channel
+	Permission  *ssh.Permissions
+	Term        string
+	Width       int
+	Heigth      int
 	// emits a value, if with or height changes.
-	ChSize <- chan int
-	chs    chan int
+	ChSize      <- chan int
+	chs         chan int
 }
 func (s *ShellSession) init() {
 	s.chs = make(chan int,1)
