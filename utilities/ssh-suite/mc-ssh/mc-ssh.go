@@ -124,13 +124,13 @@ func main() {
 	switch {
 	case *useRsa:
 		err = genRsa()
-		if err!=nil { fmt.Fprintln(os.Stderr,"error gen RSA:",err)}
+		if err!=nil { fmt.Fprintln(os.Stderr,"error gen RSA:",err) }
 	case *useDsa:
 		err = genDsa()
-		if err!=nil { fmt.Fprintln(os.Stderr,"error gen DSA:",err)}
+		if err!=nil { fmt.Fprintln(os.Stderr,"error gen DSA:",err) }
 	case *useEcdsa:
 		err = genEcdsa()
-		if err!=nil { fmt.Fprintln(os.Stderr,"error gen ECDSA:",err)}
+		if err!=nil { fmt.Fprintln(os.Stderr,"error gen ECDSA:",err) }
 	default: flag.PrintDefaults()
 	}
 }
