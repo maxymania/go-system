@@ -22,10 +22,12 @@ import "github.com/maxymania/go-system/sshlib"
 func HandleSess(sess *sshlib.ShellSession, cmd *exec.Cmd) {
 	defer sess.Ch.Close()
 	xout,_ := cmd.StdoutPipe()
+	xerr,_ := cmd.StderrPipe()
 	xin,_ := cmd.StdinPipe()
 	cmd.Start()
 	go copyout(xout,sess.Ch)
-	go copyin(xin,sess.Ch)
+	go copyerr(xerr,sess.Ch)
+	go copyin(xin,sess.Ch,cmd)
 	cmd.Wait()
 }
 
@@ -33,8 +35,12 @@ func copyout(i io.ReadCloser,c ssh.Channel){
 	defer i.Close()
 	io.Copy(c,i)
 }
+func copyerr(i io.ReadCloser,c ssh.Channel){
+	defer i.Close()
+	io.Copy(c.Stderr(),i)
+}
 
-func copyin(o io.WriteCloser,c ssh.Channel){
+func copyin(o io.WriteCloser,c ssh.Channel, cmd *exec.Cmd){
 	defer o.Close()
 	cc := bufio.NewReader(c)
 	cmdbuffer := make([]byte,0,200)
@@ -44,6 +50,7 @@ func copyin(o io.WriteCloser,c ssh.Channel){
 	for{
 		b,e := cc.ReadByte()
 		if e!=nil { return }
+		
 		/*
 		if b>=0x20 {
 			fmt.Printf("Char '%c' \\x%02x\n",int(b),int(b))
@@ -51,6 +58,7 @@ func copyin(o io.WriteCloser,c ssh.Channel){
 			fmt.Printf("Char '#' \\x%02x\n",int(b))
 		}
 		*/
+		
 		switch b{
 		case '\n': break // ignore
 		case '\r':
@@ -77,7 +85,9 @@ func copyin(o io.WriteCloser,c ssh.Channel){
 			}
 		case 0x04: //ctrl-d
 			fmt.Fprintf(c,"\r\ntype 'exit' to logout\r\n")
-		//case 0x03: //ctrl-c
+		case 0x03: //ctrl-c
+			cmd.Process.Kill()
+			o.Close()
 		default:
 			buffer[0]=b
 			cmdbuffer = append(cmdbuffer,b)
