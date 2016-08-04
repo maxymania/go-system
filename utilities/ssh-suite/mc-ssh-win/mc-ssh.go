@@ -102,8 +102,8 @@ func genEcdsa() (e error) {
 	var b []byte
 	curve := elliptic.P256()
 	switch {
-	case *ecdsaP384:curve = elliptic.P256()
-	case *ecdsaP521:curve = elliptic.P256()
+	case *ecdsaP384:curve = elliptic.P384()
+	case *ecdsaP521:curve = elliptic.P521()
 	}
 	pk,e = ecdsa.GenerateKey(curve,rand.Reader)
 	if e!=nil { return }
